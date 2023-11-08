@@ -19,19 +19,19 @@ players = []
 with open(os.path.join(__location__, 'Players.csv')) as f:
     rows = csv.DictReader(f)
     for r in rows:
-        countries.append(dict(r))
+        players.append(dict(r))
 
 teams = []
 with open(os.path.join(__location__, 'Teams.csv')) as f:
     rows = csv.DictReader(f)
     for r in rows:
-        countries.append(dict(r))
+        teams.append(dict(r))
 
 titanic = []
 with open(os.path.join(__location__, 'Titanic.csv')) as f:
     rows = csv.DictReader(f)
     for r in rows:
-        countries.append(dict(r))
+        titanic.append(dict(r))
 
 class DB:
     def __init__(self):
@@ -45,13 +45,13 @@ class DB:
             if table.table_name == table_name:
                 return table
         return None
-    
+
 import copy
 class Table:
     def __init__(self, table_name, table):
         self.table_name = table_name
         self.table = table
-    
+
     def join(self, other_table, common_key):
         joined_table = Table(self.table_name + '_joins_' + other_table.table_name, [])
         for item1 in self.table:
@@ -62,20 +62,20 @@ class Table:
                     dict1.update(dict2)
                     joined_table.table.append(dict1)
         return joined_table
-    
+
     def filter(self, condition):
         filtered_table = Table(self.table_name + '_filtered', [])
         for item1 in self.table:
             if condition(item1):
                 filtered_table.table.append(item1)
         return filtered_table
-    
+
     def aggregate(self, function, aggregation_key):
         temps = []
         for item1 in self.table:
             temps.append(float(item1[aggregation_key]))
         return function(temps)
-    
+
     def select(self, attributes_list):
         temps = []
         for item1 in self.table:
@@ -101,8 +101,13 @@ my_DB.insert(table3)
 my_DB.insert(table4)
 my_DB.insert(table5)
 my_table1 = my_DB.search('cities')
+my_table2 = my_DB.search('countries')
+my_table3 = my_DB.search('players')
+my_table4 = my_DB.search('teams')
+my_table5 = my_DB.search('titanic')
 
-print("Test filter: only filtering out cities in Italy") 
+
+print("Test filter: only filtering out cities in Italy")
 my_table1_filtered = my_table1.filter(lambda x: x['country'] == 'Italy')
 print(my_table1_filtered)
 print()
@@ -145,3 +150,24 @@ for item in my_table2.table:
     if len(my_table1_filtered.table) >= 1:
         print(item['country'], my_table1_filtered.aggregate(lambda x: min(x), 'latitude'), my_table1_filtered.aggregate(lambda x: max(x), 'latitude'))
 print()
+
+print("What player on a team with “ia” in the team name played less than 200 minutes and made more than 100 passes?")
+team_filtered = my_table3.filter(lambda x: 'ia' in x['team']).filter(lambda x: int(x['minutes']) < 200).filter(lambda x: int(x['passes']) > 100)
+team_selected = team_filtered.select(['surname', 'team', 'position'])
+print(team_selected)
+
+print('The average number of games played for teams ranking below 10 versus teams ranking above or equal 10')
+ranking_below_10 = my_table4.filter(lambda x: int(x['ranking']) < 10)
+ranking_above_10 = my_table4.filter(lambda x: int(x['ranking']) >= 10)
+average_games_played_below_10 = ranking_below_10.aggregate(lambda x: sum(x) / len(x), 'games')
+average_games_played_above_10 = ranking_above_10.aggregate(lambda x: sum(x) / len(x), 'games')
+print("below 10:", average_games_played_below_10)
+print("above or equal to 10:", average_games_played_above_10)
+
+print('The average number of passes made by forwards versus by midfielders')
+forwards = my_table3.filter(lambda x: x['position'] == 'forward')
+midfielders = my_table3.filter(lambda x: x['position'] == 'midfielder')
+average_passes_forwards = forwards.aggregate(lambda x: sum(x) / len(x), 'passes')
+average_passes_midfielders = midfielders.aggregate(lambda x: sum(x) / len(x), 'passes')
+print("forwards:", average_passes_forwards)
+print("midfielders:", average_passes_midfielders)
