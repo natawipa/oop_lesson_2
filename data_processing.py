@@ -152,7 +152,7 @@ for item in my_table2.table:
 print()
 
 print("What player on a team with “ia” in the team name played less than 200 minutes and made more than 100 passes?")
-team_filtered = my_table3.filter(lambda x: 'ia' in x['team']).filter(lambda x: int(x['minutes']) < 200).filter(lambda x: int(x['passes']) > 100)
+team_filtered = table3.filter(lambda x: 'ia' in x['team']).filter(lambda x: int(x['minutes']) < 200).filter(lambda x: int(x['passes']) > 100)
 team_selected = team_filtered.select(['surname', 'team', 'position'])
 print(team_selected)
 
@@ -164,10 +164,40 @@ average_games_played_above_10 = ranking_above_10.aggregate(lambda x: sum(x) / le
 print("below 10:", average_games_played_below_10)
 print("above or equal to 10:", average_games_played_above_10)
 
-print('The average number of passes made by forwards versus by midfielders')
-forwards = my_table3.filter(lambda x: x['position'] == 'forward')
-midfielders = my_table3.filter(lambda x: x['position'] == 'midfielder')
+print("The average number of passes made by forwards versus by midfielders")
+forwards = table3.filter(lambda x: x['position'] == 'forward')
+midfielders = table3.filter(lambda x: x['position'] == 'midfielder')
 average_passes_forwards = forwards.aggregate(lambda x: sum(x) / len(x), 'passes')
 average_passes_midfielders = midfielders.aggregate(lambda x: sum(x) / len(x), 'passes')
 print("forwards:", average_passes_forwards)
 print("midfielders:", average_passes_midfielders)
+
+print("The average fare paid by passengers in the first class versus in the third class")
+first_class = my_table5.filter(lambda x: int(x['class']) == 1)
+third_class = my_table5.filter(lambda x: int(x['class']) == 3)
+average_first_class = first_class.aggregate(lambda x: sum(x) / len(x), 'fare')
+average_third_class = third_class.aggregate(lambda x: sum(x) / len(x), 'fare')
+print("first class:", average_first_class)
+print("third class:", average_third_class)
+
+print("The survival rate of male versus female passengers")
+male = my_table5.filter(lambda x: str(x['gender']) == 'M')
+female = my_table5.filter(lambda x: str(x['gender']) == 'F')
+
+all_female = []
+survived_female = []
+for item in female.table:
+    all_female.append(item['gender'])
+    if item['survived'] == 'yes':
+        survived_female.append(item['survived'])
+
+all_male = []
+survived_male = []
+for item in male.table:
+    all_male.append(item['gender'])
+    if item['survived'] == 'yes':
+        survived_male.append(item['survived'])
+
+print("Female survival rate", (len(survived_female) / len(all_female) * 100))
+print("Male survival rate", (len(survived_male) / len(all_male) * 100))
+print()
