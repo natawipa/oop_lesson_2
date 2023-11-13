@@ -23,21 +23,29 @@ def gen_comb_list(list_set):
     #
     # return result
 
-    if len(list_set) == 1:
-        result =  []
-        for item in list_set[0]:
-            result.append([item])
-        return result
-    comb_list = gen_comb_list(list_set[0:-1])
-    result = []
-    for ls_item in comb_list:
-        for val in list_set[-1]:
-            _item = copy.deepcopy(ls_item)
-            _item.append(val)
-            result.append(_item)
+    # if len(list_set) == 1:
+    #     result =  []
+    #     for item in list_set[0]:
+    #         result.append([item])
+    #     return result
+    # comb_list = gen_comb_list(list_set[0:-1])
+    # result = []
+    # for ls_item in comb_list:
+    #     for val in list_set[-1]:
+    #         _item = copy.deepcopy(ls_item)
+    #         _item.append(val)
+    #         result.append(_item)
+    # return result
+
+    if not list_set:
+        return [[]]
+
+    result = [[]]
+    for lst in list_set:
+        temp = []
+        for r in result:
+            for item in lst:
+                temp.append(r + [item])
+        result = temp
+
     return result
-
-gen_comb_list([[1, 2, 3]])
-gen_comb_list([[1, 2, 3], [4, 5]])
-gen_comb_list([[1, 2, 3], [4, 5], [6, 7, 8]])
-
