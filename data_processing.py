@@ -1,4 +1,5 @@
 import csv, os
+import combination_gen
 
 __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -100,6 +101,28 @@ class Table:
 
     def __str__(self):
         return self.table_name + ':' + str(self.table)
+    
+    def pivot_table(self, keys_to_pivot_list, keys_to_aggreagte_list, aggregate_func_list):
+        unique_values_list = []
+        pivot_table = []
+        for key in keys_to_pivot_list:
+            my_table_selected = self.select([key])
+            temp_list = []
+            for value in my_table_selected:
+                if value not in temp_list:
+                    temp_list.append(value)
+            unique_values_list.append(temp_list)
+        combination_list = combination_gen.gen_comb_list(unique_values_list)
+        for value in combination_list:
+            aggregate_value = []
+            temp = copy.copy(self)
+            for i in range(len(value)):
+                temp = temp.filter(lambda x: x[keys_to_pivot_list[i]] == value[i])
+            for j in range(len(keys_to_aggreagte_list)):
+                value = temp.aggregate(aggregate_func_list[j], keys_to_aggreagte_list[j])
+                aggregate_value.append(value)
+                pivot_table.append([value, aggregate_value])
+        return pivot_table
 
 table1 = Table('cities', cities)
 table2 = Table('countries', countries)
